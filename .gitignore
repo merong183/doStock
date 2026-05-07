@@ -1,0 +1,50 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+env/
+
+# Env
+.env
+.env.local
+.env.*.local
+*.local
+
+# Build / Next.js
+frontend/.next/
+frontend/out/
+frontend/build/
+dist/
+*.egg-info/
+.eggs/
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Logs & debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# Alembic (optional local)
+# keep versions/ tracked; ignore if you use local sqlite
+*.db
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/

@@ -1,0 +1,20 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+# 저장소 연결 후 대시보드에서 "New" → "Blueprint"로 이 파일을 지정하거나
+# Git에 푸시하면 감지됩니다. DATABASE_URL 등은 대시보드에서 수동 설정하세요.
+
+services:
+  - type: web
+    name: dostock-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /health
+    envVars:
+      - key: CORS_ORIGINS
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: SERPER_API_KEY
+        sync: false
