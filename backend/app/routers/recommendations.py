@@ -1,56 +1,92 @@
 from datetime import date
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.database import get_db
+from app.models.news import News
+from app.models.recommendation import Recommendation
+from app.models.stock import Stock
+from app.services.translator import bilingual
 
 router = APIRouter(prefix="/api/recommendations", tags=["recommendations"])
 
 
 @router.get("/today")
-async def get_today_recommendations():
-    """오늘 추천 종목 (더미)."""
-    return {
-        "date": date.today().isoformat(),
-        "items": [
+async def get_today_recommendations(db: AsyncSession = Depends(get_db)):
+    today = date.today()
+    result = await db.execute(
+        select(Recommendation, Stock)
+        .join(Stock, Stock.ticker == Recommendation.ticker)
+        .where(Recommendation.date == today)
+        .order_by(Recommendation.confidence.desc().nullslast())
+    )
+    rows = result.all()
+    tickers = [rec.ticker for rec, _ in rows]
+    latest_news: dict[str, dict[str, str]] = {}
+    if tickers:
+        news_result = await db.execute(
+            select(News)
+            .where(News.ticker.in_(tickers))
+            .order_by(News.ticker, News.fetched_at.desc())
+        )
+        for article in news_result.scalars().all():
+            if article.ticker not in latest_news:
+                latest_news[article.ticker] = {
+                    "title": article.title,
+                    "url": article.url or "",
+                }
+
+    items = []
+    for rec, stock in rows:
+        news = latest_news.get(rec.ticker, {})
+        reason_ko, reason_orig = await bilingual(rec.reason or "")
+        news_title = news.get("title", "")
+        news_title_ko, news_title_orig = (
+            await bilingual(news_title) if news_title else ("", None)
+        )
+
+        items.append(
             {
-                "ticker": "005930",
-                "name": "삼성전자",
-                "market": "KR",
-                "confidence": 0.82,
-                "risk_level": "mid",
-                "reason": "더미: 단기 모멘텀과 반도체 업황 개선 기대.",
-            },
-            {
-                "ticker": "AAPL",
-                "name": "Apple Inc.",
-                "market": "US",
-                "confidence": 0.71,
-                "risk_level": "low",
-                "reason": "더미: 서비스 매출 성장 및 현금흐름 안정.",
-            },
-        ],
-    }
+                "ticker": rec.ticker,
+                "name": stock.name,
+                "market": stock.market,
+                "confidence": rec.confidence or 0.0,
+                "risk_level": rec.risk_level or "mid",
+                "reason": reason_ko,
+                "reason_original": reason_orig,
+                "latest_news_title": news_title_ko or news_title,
+                "latest_news_title_original": news_title_orig,
+                "latest_news_url": news.get("url", ""),
+            }
+        )
+
+    return {"date": today.isoformat(), "items": items}
 
 
 @router.get("/history")
-async def get_recommendation_history():
-    """추천 히스토리 (더미)."""
-    return {
-        "items": [
+async def get_recommendation_history(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(
+        select(Recommendation)
+        .order_by(Recommendation.date.desc(), Recommendation.confidence.desc().nullslast())
+        .limit(100)
+    )
+    rows = list(result.scalars().all())
+
+    items = []
+    for row in rows:
+        reason_ko, reason_orig = await bilingual(row.reason or "")
+        items.append(
             {
-                "id": 1,
-                "ticker": "005930",
-                "date": "2026-05-01",
-                "confidence": 0.79,
-                "risk_level": "mid",
-                "reason": "더미 과거 추천 근거.",
-            },
-            {
-                "id": 2,
-                "ticker": "NVDA",
-                "date": "2026-05-02",
-                "confidence": 0.68,
-                "risk_level": "high",
-                "reason": "더미 변동성 높은 성장주 관점.",
-            },
-        ]
-    }
+                "id": row.id,
+                "ticker": row.ticker,
+                "date": row.date.isoformat(),
+                "confidence": row.confidence or 0.0,
+                "risk_level": row.risk_level or "mid",
+                "reason": reason_ko,
+                "reason_original": reason_orig,
+            }
+        )
+
+    return {"items": items}

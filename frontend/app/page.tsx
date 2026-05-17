@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { getTodayRecommendations } from "@/lib/api";
+import { RecommendationCard } from "@/components/RecommendationCard";
 
 function riskBadgeClass(level: string) {
   switch (level) {
@@ -46,39 +46,11 @@ export default async function HomePage() {
 
       <ul className="flex flex-col gap-4">
         {data.items.map((item) => (
-          <li key={`${item.ticker}-${item.market}`}>
-            <Link
-              href={`/stock/${encodeURIComponent(item.ticker)}`}
-              className="block rounded-xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-zinc-300 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-zinc-700"
-            >
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <p className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-                    {item.name}{" "}
-                    <span className="font-normal text-zinc-500 dark:text-zinc-400">
-                      {item.ticker}
-                    </span>
-                  </p>
-                  <p className="mt-1 text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                    {item.market}
-                  </p>
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-medium ${riskBadgeClass(item.risk_level)}`}
-                  >
-                    리스크 {item.risk_level}
-                  </span>
-                  <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
-                    확신도 {(item.confidence * 100).toFixed(0)}%
-                  </span>
-                </div>
-              </div>
-              <p className="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
-                {item.reason}
-              </p>
-            </Link>
-          </li>
+          <RecommendationCard
+            key={`${item.ticker}-${item.market}`}
+            item={item}
+            riskBadgeClass={riskBadgeClass}
+          />
         ))}
       </ul>
 

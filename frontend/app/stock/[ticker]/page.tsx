@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { NewsCard } from "@/components/NewsCard";
 import { getStockNews } from "@/lib/api";
 
 type Props = {
@@ -29,7 +30,7 @@ export default async function StockDetailPage({ params }: Props) {
           {news.ticker}
         </h1>
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          종목 관련 뉴스 (더미 응답)
+          종목 관련 뉴스
         </p>
       </header>
 
@@ -41,25 +42,7 @@ export default async function StockDetailPage({ params }: Props) {
 
       <ul className="flex flex-col gap-4">
         {news.items.map((n) => (
-          <li
-            key={n.id}
-            className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-950"
-          >
-            <a
-              href={n.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-lg font-semibold text-blue-600 hover:underline dark:text-blue-400"
-            >
-              {n.title}
-            </a>
-            <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
-              {n.source} · {n.published_at}
-            </p>
-            <p className="mt-3 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
-              {n.snippet}
-            </p>
-          </li>
+          <NewsCard key={n.id} item={n} />
         ))}
       </ul>
 

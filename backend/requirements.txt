@@ -11,3 +11,4 @@ yfinance
 beautifulsoup4
 requests
 pydantic
+deep-translator

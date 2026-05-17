@@ -24,7 +24,7 @@ export default async function HistoryPage() {
           추천 히스토리
         </h1>
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          과거 추천 기록입니다 (현재 더미 데이터).
+          과거 추천 기록입니다.
         </p>
       </header>
 

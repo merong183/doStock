@@ -1,6 +1,5 @@
 # Render Blueprint: https://render.com/docs/blueprint-spec
-# 저장소 연결 후 대시보드에서 "New" → "Blueprint"로 이 파일을 지정하거나
-# Git에 푸시하면 감지됩니다. DATABASE_URL 등은 대시보드에서 수동 설정하세요.
+# Git push 후 Render 대시보드에서 환경 변수를 설정하세요.
 
 services:
   - type: web
@@ -18,3 +17,9 @@ services:
         sync: false
       - key: SERPER_API_KEY
         sync: false
+      - key: NEWS_PROVIDER
+        value: yfinance
+      - key: AI_PROVIDER
+        value: rules
+      - key: ENABLE_TRANSLATION
+        value: "true"

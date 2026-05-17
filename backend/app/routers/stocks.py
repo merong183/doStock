@@ -1,30 +1,48 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.database import get_db
+from app.models.news import News
+from app.services.translator import bilingual
 
 router = APIRouter(prefix="/api/stocks", tags=["stocks"])
 
 
 @router.get("/{ticker}/news")
-async def get_stock_news(ticker: str):
-    """특정 종목 뉴스 (더미)."""
+async def get_stock_news(ticker: str, db: AsyncSession = Depends(get_db)):
     sym = ticker.upper()
-    return {
-        "ticker": sym,
-        "items": [
+    result = await db.execute(
+        select(News)
+        .where(News.ticker == sym)
+        .order_by(News.fetched_at.desc())
+        .limit(30)
+    )
+    rows = list(result.scalars().all())
+
+    items = []
+    for row in rows:
+        snippet_raw = (row.content or "")[:500]
+        title_ko, title_orig = await bilingual(row.title)
+        snippet_ko, snippet_orig = await bilingual(snippet_raw) if snippet_raw else ("", None)
+
+        items.append(
             {
-                "id": 1,
-                "title": f"[더미] {sym} 분기 실적 시장 기대치 부합",
-                "source": "DummyWire",
-                "url": "https://example.com/news/1",
-                "published_at": "2026-05-02T09:00:00Z",
-                "snippet": "실제 데이터 연동 전 플레이스홀더 본문입니다.",
-            },
-            {
-                "id": 2,
-                "title": f"[더미] {sym} 업종 동향 리포트",
-                "source": "DemoResearch",
-                "url": "https://example.com/news/2",
-                "published_at": "2026-05-01T15:30:00Z",
-                "snippet": "추후 Serper·크롤링 등으로 교체 예정입니다.",
-            },
-        ],
-    }
+                "id": row.id,
+                "title": row.title,
+                "title_ko": title_ko,
+                "title_original": title_orig,
+                "source": row.source or "",
+                "url": row.url or "",
+                "published_at": (
+                    row.published_at.isoformat()
+                    if row.published_at
+                    else row.fetched_at.isoformat()
+                ),
+                "snippet": snippet_raw,
+                "snippet_ko": snippet_ko,
+                "snippet_original": snippet_orig,
+            }
+        )
+
+    return {"ticker": sym, "items": items}

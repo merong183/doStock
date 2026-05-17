@@ -18,6 +18,10 @@ export type TodayRecommendationItem = {
   confidence: number;
   risk_level: string;
   reason: string;
+  reason_original?: string | null;
+  latest_news_title?: string;
+  latest_news_title_original?: string | null;
+  latest_news_url?: string;
 };
 
 export type TodayRecommendationsResponse = {
@@ -32,6 +36,7 @@ export type HistoryItem = {
   confidence: number;
   risk_level: string;
   reason: string;
+  reason_original?: string | null;
 };
 
 export type HistoryResponse = {
@@ -41,10 +46,14 @@ export type HistoryResponse = {
 export type NewsItem = {
   id: number;
   title: string;
+  title_ko?: string;
+  title_original?: string | null;
   source: string;
   url: string;
   published_at: string;
   snippet: string;
+  snippet_ko?: string;
+  snippet_original?: string | null;
 };
 
 export type StockNewsResponse = {
