@@ -7,7 +7,6 @@ asyncpg
 alembic
 apscheduler
 anthropic
-yfinance
 beautifulsoup4
 requests
 pydantic

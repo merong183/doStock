@@ -3,7 +3,6 @@ import os
 from urllib.parse import quote_plus
 
 import httpx
-import yfinance as yf
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -27,7 +26,11 @@ def _news_provider() -> str:
         return explicit
     if _serper_api_key():
         return "serper"
-    return "yfinance"
+    try:
+        import yfinance  # noqa: F401
+        return "yfinance"
+    except ImportError:
+        return "google_rss"
 
 
 def _yfinance_symbol(stock: Stock) -> str:
@@ -65,6 +68,12 @@ def _normalize_yfinance_item(item: dict) -> dict:
 
 
 def _fetch_from_yfinance_sync(symbol: str) -> list[dict]:
+    try:
+        import yfinance as yf
+    except ImportError as e:
+        raise RuntimeError(
+            "yfinance가 설치되지 않았습니다. pip install yfinance 또는 NEWS_PROVIDER=google_rss"
+        ) from e
     raw = yf.Ticker(symbol).news or []
     items: list[dict] = []
     for row in raw[:NEWS_PER_TICKER]:

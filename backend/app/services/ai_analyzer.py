@@ -4,7 +4,6 @@ import re
 from datetime import date, datetime, timedelta, timezone
 
 import httpx
-from anthropic import AsyncAnthropic
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -72,6 +71,8 @@ async def _analyze_anthropic(stock: Stock, snippets: list[str]) -> dict:
     api_key = _anthropic_api_key()
     if not api_key:
         raise ValueError("ANTHROPIC_API_KEY가 설정되지 않았습니다.")
+
+    from anthropic import AsyncAnthropic
 
     client = AsyncAnthropic(api_key=api_key)
     news_block = "\n".join(f"- {s}" for s in snippets[:MAX_SNIPPETS])

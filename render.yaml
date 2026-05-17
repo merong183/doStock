@@ -18,7 +18,7 @@ services:
       - key: SERPER_API_KEY
         sync: false
       - key: NEWS_PROVIDER
-        value: yfinance
+        value: google_rss
       - key: AI_PROVIDER
         value: rules
       - key: ENABLE_TRANSLATION

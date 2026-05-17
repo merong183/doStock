@@ -6,7 +6,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.routers import news, recommendations, stocks
-from app.services.pipeline import run_daily_pipeline
 
 load_dotenv()
 
@@ -54,6 +53,8 @@ async def health():
 @app.post("/api/scheduler/run")
 async def run_scheduler_manual():
     """개발용 수동 트리거: 뉴스 수집 → AI 추천 생성."""
+    from app.services.pipeline import run_daily_pipeline
+
     summary = await run_daily_pipeline()
     message = "파이프라인 완료"
     if summary.get("errors"):
